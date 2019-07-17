@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.StudentMapper">
+	<!-- 添加返回主键 -->
+	<insert id="add">
+		<selectKey  keyProperty='sid' resultType="int" order="AFTER">
+			select LAST_INSERT_ID()
+			<!-- select SEQ.nextVal from daul -->
+		</selectKey>
+		insert into student (sname,gender,birthday,cid) values (#{sname},#{gender},#{birthday},#{cid})
+	</insert> 
+	
+	<!-- 一对一关联查询 -->
+    <select id="findOneRelation" resultMap="classMap">
+        select s.*,c.cname from student s,classes c 
+        where s.cid = c.cid
+        and s.sid=#{sid} 
+    </select>	
+	
+	<!-- 一对一关联查询 -->
+    <select id="selectAllRelation" resultMap="classMap">
+        select s.*,c.cname from student s,classes c 
+        where s.cid = c.cid 
+    </select>
+    
+	<!-- 一对一多不同条件匹配查询 ,动态SQL应用-->
+    <select id="selectWhere" resultMap="classMap">
+        select s.*,c.cname from student s,classes c 
+        <where>
+        s.cid = c.cid
+        <if test="s.sname != null">
+        	and s.sname = like '%${sname}%'
+    	</if> 
+        <if test="s.gender != null">
+        	and s.gender = #{gender}
+    	</if> 
+        <if test="s.cid != null">
+        	and s.cid = #{cid}
+    	</if> 
+    	<!-- 生日区间 -->
+        <!-- <if test="s.birthday != null"> 
+        	and s.gender = #{gender}
+    	</if> --> 
+        </where>  
+    </select>
+    <select id="query" resultMap="classMap">
+    	${value}
+    </select>
+    
+    
+    
+    
+    <resultMap id="classMap" type="student">
+        <id column="sid" property="sid"/>
+        <result column="sname" property="sname"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="cid" property="cid"/>
+        <association property="cla" javaType="classes">
+            <id column="cid" property="cid"/>
+            <result column="cname" property="cname"/>
+        </association>
+    </resultMap>
+	
+	
+</mapper> 
